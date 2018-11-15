@@ -1,0 +1,25 @@
+{
+  "name": "now-typescript",
+  "version": "0.2.0",
+  "description": "now-typescript",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bergold/now-typescript.git"
+  },
+  "author": "Emil Bergold",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bergold/now-typescript/issues"
+  },
+  "homepage": "https://github.com/bergold/now-typescript#readme",
+  "dependencies": {
+    "@now/node-bridge": "^0.1.7"
+  },
+  "peerDependencies": {
+    "@now/build-utils": ">=0.0.1"
+  }
+}
