@@ -35,15 +35,19 @@ async function commonForTwo({ files, entrypoint, workPath, cachePath }) {
       'package.json': new FileBlob({
         data: JSON.stringify({
           dependencies: {
+            typescript: TS_VERSION,
             builtins: '2.0.0',
             rollup: '0.67.0',
             'rollup-plugin-commonjs': '9.2.0',
             'rollup-plugin-json': '3.1.0',
             'rollup-plugin-node-resolve': '3.4.0',
             'rollup-plugin-terser': '3.0.0',
-            'rollup-plugin-typescript': '1.0.0',
-            typescript: TS_VERSION,
-            tslib: '*',
+          },
+          scripts: {
+            tsc: `tsc --lib esnext,dom --moduleResolution node --target es6 ${path.join(
+              '../user',
+              entrypoint
+            )}`,
           },
         }),
       }),
@@ -59,14 +63,17 @@ async function commonForTwo({ files, entrypoint, workPath, cachePath }) {
 async function compile(workRollupPath, input) {
   // const ts = require(path.join(workRollupPath, 'node_modules/typescript'))
   const rollup = require(path.join(workRollupPath, 'node_modules/rollup'))
-  const typescript = require(path.join(workRollupPath, 'node_modules/rollup-plugin-typescript'))
+  // const typescript = require(path.join(workRollupPath, 'node_modules/rollup-plugin-typescript'))
   const nodeResolve = require(path.join(workRollupPath, 'node_modules/rollup-plugin-node-resolve'))
   const commonjs = require(path.join(workRollupPath, 'node_modules/rollup-plugin-commonjs'))
   const json = require(path.join(workRollupPath, 'node_modules/rollup-plugin-json'))
   const { terser } = require(path.join(workRollupPath, 'node_modules/rollup-plugin-terser'))
   const builtins = require(path.join(workRollupPath, 'node_modules/builtins'))()
 
-  // const source = await fsp.readFile(input, 'utf-8')
+  console.log('running typescript compiler')
+  await runPackageJsonScript(workRollupPath, 'tsc')
+
+  // const source = await fsp.readFile(input, 'utf8')
 
   // const jsFiles = ts.transpileModule(source, {
   //   compilerOptions: { module: ts.ModuleKind.CommonJS }
@@ -75,7 +82,7 @@ async function compile(workRollupPath, input) {
   const bundle = await rollup.rollup({
     input,
     plugins: [
-      typescript(),
+      // typescript({ module: 'CommonJS' }),
       nodeResolve({
         module: false,
         jsnext: false,
@@ -112,7 +119,8 @@ exports.build = async ({ files, entrypoint, workPath }) => {
   await runPackageJsonScript(entrypointFsDirname, 'now-build')
 
   console.log('compiling entrypoint with rollup...')
-  const data = await compile(workRollupPath, filesOnDisk[entrypoint].fsPath)
+  const fsPath = filesOnDisk[entrypoint].fsPath.replace(/\.ts$/g, '.js')
+  const data = await compile(workRollupPath, fsPath)
   const blob = new FileBlob({ data })
 
   console.log('preparing lambda files...')
